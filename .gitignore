@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Virtual environments
+.venv/
+venv/
+venv_new/
+ENV/
+env/
+
+# Sensitive API Keys
+.env
+
+# Project specific caches and outputs
+uploads/*
+!uploads/.gitkeep
+reports/*
+!reports/.gitkeep
+audio/*
+!audio/.gitkeep
+memory.json

@@ -9,18 +9,20 @@
 
 ---
 
-**HireReady AI** is a premium, commercial-grade resume intelligence platform powered by a **multi-agent LangGraph architecture** and a modern **Glassmorphic design system**. The platform parses resumes, evaluates ATS score compliance, performs semantic job role matching, discovers skill gaps, generates optimized bullet-points, and builds custom interview coaching tools—supporting both voice notes (Speech-to-Text) and audio narration (Text-to-Speech) out of the box.
+**HireReady AI** is a premium, commercial-grade resume intelligence platform powered by a **multi-agent LangGraph architecture** . The platform parses resumes, evaluates ATS score compliance, performs semantic job role matching, discovers skill gaps, generates optimized bullet-points, and builds custom interview coaching tools—supporting both voice notes (Speech-to-Text) and audio narration (Text-to-Speech) out of the box.
 
 https://hirereadyai-n6vh47cfgeevrsdkcusztx.streamlit.app/
 ---
 
-## 📸 Premium UI Interface
+## 📸 User Interface
 
-The user interface has been completely redesigned using a modern **SaaS design system**:
-* **Glassmorphic Visuals**: Dark Navy layout (`#090D1A`) with glass cards, glows, and subtle hover animations.
-* **SVG Metric Rings**: 5 interactive dashboard metrics (ATS Score, Job Match, Resume Quality, Interview Readiness, and Overall Career Rating).
-* **Live Step-by-Step Pipeline**: Real-time loader streaming node transitions via `workflow.stream()`.
-* **7-Tab Workspace**: Highly organized dashboard showcasing deep candidate analytics, vertical timelines, before/after optimizer grids, and customizable difficulty filters.
+The application features a clean, modern, and easy-to-use interface designed to provide a smooth user experience.
+
+* **Modern Dashboard:** Built with a dark-themed glassmorphism design for a professional and visually appealing look.
+* **Interactive Metrics:** Displays important resume insights such as ATS Score, Job Match, Resume Quality, Interview Readiness, and Overall Career Rating.
+* **Live Processing Updates:** Shows the progress of each AI agent while analyzing the resume, helping users understand each step of the workflow.
+* **Organized Workspace:** Information is presented using multiple tabs, making it easy to navigate between resume analysis, optimization, skill gaps, interview preparation, and generated reports.
+.
 
 ---
 
@@ -135,6 +137,22 @@ HireReady_AI/
 │   └── translator.py          # OpenRouter multi-language helper
 └── prompts/                   # Structured system instructions
 ```
+## 🙌 Acknowledgements
+
+This project was built using several open-source libraries and APIs that made its development possible.
+
+* **Streamlit** – Interactive web application framework.
+* **LangGraph** – Multi-agent workflow orchestration.
+* **LangChain** – LLM application development framework.
+* **OpenRouter API** – Access to large language models for resume analysis and report generation.
+* **SentenceTransformers** – Semantic text embeddings for job matching.
+* **FAISS** – Efficient similarity search and vector retrieval.
+* **PyMuPDF (fitz)** – PDF parsing and text extraction.
+* **ElevenLabs API** – Speech-to-Text (STT) and Text-to-Speech (TTS) capabilities.
+* **ReportLab** – PDF report generation.
+* **scikit-learn** – Keyword extraction and text processing.
+* **Python** – Core programming language used to build the application.
+
 
 ---
 

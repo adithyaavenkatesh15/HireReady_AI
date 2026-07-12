@@ -11,7 +11,7 @@
 
 **HireReady AI** is a premium, commercial-grade resume intelligence platform powered by a **multi-agent LangGraph architecture** . The platform parses resumes, evaluates ATS score compliance, performs semantic job role matching, discovers skill gaps, generates optimized bullet-points, and builds custom interview coaching tools—supporting both voice notes (Speech-to-Text) and audio narration (Text-to-Speech) out of the box.
 
-https://hirereadyai-n6vh47cfgeevrsdkcusztx.streamlit.app/
+[https://hirereadyai-n6vh47cfgeevrsdkcusztx.streamlit.app/](https://hirereadyai-agenticai.streamlit.app/)
 ---
 
 ## 📸 User Interface

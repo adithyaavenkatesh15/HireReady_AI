@@ -922,21 +922,44 @@ if report:
             st.markdown("#### 🛠️ Experience Bullet-Point Polish")
             for idx, bullet in enumerate(bullet_rewrites, start=1):
                 st.markdown(f"**Bullet Rewrite Suggestion {idx}:**")
-                if " -> " in bullet:
-                    before_bullet, after_bullet = bullet.split(" -> ", 1)
-                elif " - " in bullet:
-                    before_bullet, after_bullet = bullet.split(" - ", 1)
+                
+                original_text = ""
+                improved_text = ""
+                
+                bullet_data = None
+                if isinstance(bullet, dict):
+                    bullet_data = bullet
+                elif isinstance(bullet, str):
+                    try:
+                        import ast
+                        bullet_data = ast.literal_eval(bullet)
+                    except Exception:
+                        pass
+                
+                if isinstance(bullet_data, dict):
+                    original_text = bullet_data.get("original", "")
+                    improved_val = bullet_data.get("improved", "")
+                    if isinstance(improved_val, list):
+                        improved_text = "\n".join(f"• {item}" for item in improved_val)
+                    else:
+                        improved_text = str(improved_val)
                 else:
-                    before_bullet = "Original bullet phrasing."
-                    after_bullet = bullet
+                    bullet_str = str(bullet)
+                    if " -> " in bullet_str:
+                        original_text, improved_text = bullet_str.split(" -> ", 1)
+                    elif " - " in bullet_str:
+                        original_text, improved_text = bullet_str.split(" - ", 1)
+                    else:
+                        original_text = "Original bullet phrasing."
+                        improved_text = bullet_str
                     
                 col_b_before, col_b_after = st.columns(2)
                 with col_b_before:
-                    st.markdown(f'<div class="comparison-box comparison-before" style="padding:12px; font-size:13.5px;">❌ {before_bullet}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="comparison-box comparison-before" style="padding:12px; font-size:13.5px;">❌ {original_text}</div>', unsafe_allow_html=True)
                 with col_b_after:
-                    st.markdown(f'<div class="comparison-box comparison-after" style="padding:12px; font-size:13.5px;">✔️ {after_bullet}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="comparison-box comparison-after" style="padding:12px; font-size:13.5px; white-space: pre-wrap;">✔️ {improved_text}</div>', unsafe_allow_html=True)
                     
-                make_copy_section(after_bullet, f"copy_bullet_opt_{idx}", f"Copy Suggestion {idx}")
+                make_copy_section(improved_text, f"copy_bullet_opt_{idx}", f"Copy Suggestion {idx}")
                 st.markdown("<hr style='margin: 15px 0; opacity:0.08;' />", unsafe_allow_html=True)
                 
         action_verbs = report.get("action_verb_suggestions", [])
@@ -1041,7 +1064,11 @@ if report:
         with col_pdf:
             if st.button("📥 Generate Printable PDF Report", key="generate_pdf_dashboard", use_container_width=True):
                 try:
-                    pdf_path = generate_report_pdf(report, candidate_name)
+                    pdf_path = generate_report_pdf(
+                        report,
+                        candidate_name,
+                        language=st.session_state.get("report_language", "English")
+                    )
                     with open(pdf_path, "rb") as pdf_file:
                         st.download_button(
                             "Download PDF",
@@ -1098,27 +1125,47 @@ else:
     
     if "job_description_main" not in st.session_state:
         st.session_state["job_description_main"] = ""
+    if "job_desc_rev" not in st.session_state:
+        st.session_state["job_desc_rev"] = 0
 
     voice_transcript = ""
     if input_mode == "Voice":
         st.markdown("##### 🎙️ Voice Context Notes")
         st.info("Record a short voice note describing your career goals to adapt the analysis.")
-        if hasattr(st, "audio_input"):
+        
+        if st.session_state.get("voice_success_msg"):
+            st.success(st.session_state["voice_success_msg"])
+        if st.session_state.get("voice_error_msg"):
+            st.error(st.session_state["voice_error_msg"])
+
+        # Check query parameter to force file uploader fallback for automated testing
+        use_audio_input = hasattr(st, "audio_input") and "test_uploader" not in st.query_params
+        if use_audio_input:
             audio_input = st.audio_input("Record voice input", key="voice_record_main")
             if audio_input is not None:
-                temp_audio_path = os.path.join(UPLOADS_DIR, "voice_input.wav")
-                with open(temp_audio_path, "wb") as f:
-                    f.write(audio_input.getbuffer())
-                try:
-                    voice_transcript = speech_to_text(temp_audio_path)
-                    if voice_transcript:
-                        st.success(f"Transcribed Context: {voice_transcript}")
-                        if voice_transcript != st.session_state.get("last_voice_transcript"):
-                            st.session_state["last_voice_transcript"] = voice_transcript
+                audio_bytes = audio_input.getvalue()
+                import hashlib
+                audio_hash = hashlib.md5(audio_bytes).hexdigest()
+                if audio_hash != st.session_state.get("last_audio_hash"):
+                    st.session_state["last_audio_hash"] = audio_hash
+                    st.session_state.pop("voice_success_msg", None)
+                    st.session_state.pop("voice_error_msg", None)
+                    
+                    temp_audio_path = os.path.join(UPLOADS_DIR, "voice_input.wav")
+                    with open(temp_audio_path, "wb") as f:
+                        f.write(audio_bytes)
+                    try:
+                        voice_transcript = speech_to_text(temp_audio_path)
+                        if voice_transcript:
                             st.session_state["job_description_main"] = voice_transcript
+                            st.session_state["voice_success_msg"] = f"Transcribed Context: {voice_transcript}"
+                            st.session_state["job_desc_rev"] = st.session_state.get("job_desc_rev", 0) + 1
                             st.rerun()
-                except VoiceError as exc:
-                    st.error(f"Voice transcription failed: {exc}")
+                    except VoiceError as exc:
+                        st.session_state["voice_error_msg"] = f"Voice transcription failed: {exc}"
+                        st.rerun()
+            else:
+                st.session_state.pop("last_audio_hash", None)
         else:
             uploaded_audio = st.file_uploader(
                 "Upload voice note recording",
@@ -1126,19 +1173,29 @@ else:
                 key="voice_upload_main"
             )
             if uploaded_audio is not None:
-                temp_audio_path = os.path.join(UPLOADS_DIR, uploaded_audio.name)
-                with open(temp_audio_path, "wb") as f:
-                    f.write(uploaded_audio.getbuffer())
-                try:
-                    voice_transcript = speech_to_text(temp_audio_path)
-                    if voice_transcript:
-                        st.success(f"Transcribed Context: {voice_transcript}")
-                        if voice_transcript != st.session_state.get("last_voice_transcript"):
-                            st.session_state["last_voice_transcript"] = voice_transcript
+                audio_bytes = uploaded_audio.getvalue()
+                import hashlib
+                audio_hash = hashlib.md5(audio_bytes).hexdigest()
+                if audio_hash != st.session_state.get("last_uploaded_audio_hash"):
+                    st.session_state["last_uploaded_audio_hash"] = audio_hash
+                    st.session_state.pop("voice_success_msg", None)
+                    st.session_state.pop("voice_error_msg", None)
+                    
+                    temp_audio_path = os.path.join(UPLOADS_DIR, uploaded_audio.name)
+                    with open(temp_audio_path, "wb") as f:
+                        f.write(audio_bytes)
+                    try:
+                        voice_transcript = speech_to_text(temp_audio_path)
+                        if voice_transcript:
                             st.session_state["job_description_main"] = voice_transcript
+                            st.session_state["voice_success_msg"] = f"Transcribed Context: {voice_transcript}"
+                            st.session_state["job_desc_rev"] = st.session_state.get("job_desc_rev", 0) + 1
                             st.rerun()
-                except VoiceError as exc:
-                    st.error(f"Voice transcription failed: {exc}")
+                    except VoiceError as exc:
+                        st.session_state["voice_error_msg"] = f"Voice transcription failed: {exc}"
+                        st.rerun()
+            else:
+                st.session_state.pop("last_uploaded_audio_hash", None)
         st.markdown("<br>", unsafe_allow_html=True)
 
     col_left_input, col_right_input = st.columns(2)
@@ -1164,12 +1221,16 @@ else:
         set_selected_language(language)
         
     with col_right_input:
+        current_job_desc = st.session_state.get("job_description_main", "")
+        job_description_key = f"job_description_widget_{st.session_state.get('job_desc_rev', 0)}"
         job_description = st.text_area(
             "Job Description / Career Goals (Recommended context)",
+            value=current_job_desc,
             height=125,
             placeholder="Paste target job description to match skills, or use the voice recorder to speak your goals...",
-            key="job_description_main"
+            key=job_description_key
         )
+        st.session_state["job_description_main"] = job_description
         
     st.markdown("<br>", unsafe_allow_html=True)
     analyze_clicked = st.button("🚀 RUN CAREER INTELLIGENCE PLATFORM", type="primary", use_container_width=True, key="run_analysis_main")

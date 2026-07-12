@@ -38,6 +38,16 @@ ELEVENLABS_TTS_URL = "https://api.elevenlabs.io/v1/text-to-speech"
 # ---------------------------------------------------------------------
 SUPPORTED_LANGUAGES = {
     "English": "English",
+    "French": "French",
+    "German": "German",
+    "Spanish": "Spanish",
+    "Italian": "Italian",
+    "Portuguese": "Portuguese",
+    "Russian": "Russian",
+    "Japanese": "Japanese",
+    "Korean": "Korean",
+    "Chinese (Simplified)": "Chinese (Simplified)",
+    "Arabic": "Arabic",
     "Tamil": "Tamil",
     "Hindi": "Hindi",
     "Telugu": "Telugu",

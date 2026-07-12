@@ -18,7 +18,12 @@ format:
   "improved_projects": [],
   "grammar_fixes": [],
   "action_verb_suggestions": [],
-  "bullet_point_rewrites": []
+  "bullet_point_rewrites": [
+    {
+      "original": "exact original weak bullet point from the experience or projects",
+      "improved": "rewritten optimized version of that bullet point"
+    }
+  ]
 }
 
 Rules:
@@ -30,4 +35,5 @@ Rules:
    structure but with clearer, more impactful phrasing.
 4. Keep bullet points concise (ideally one line each).
 5. Return JSON only, no markdown fences, no extra text.
+6. The "bullet_point_rewrites" field must be a list of objects, where each object contains the "original" weak bullet point text and the "improved" optimized version.
 """
